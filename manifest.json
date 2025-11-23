@@ -1,0 +1,10 @@
+{
+  "file_id": "demo1",
+  "filename": "demo.txt",
+  "file_size": 19,
+  "block_size": 4096,
+  "num_blocks": 1,
+  "hash_alg": "SHA-256",
+  "root": "7400891287710931c2923511f2167a09ab33db5de658a10c1cec7eee55e12df0",
+  "created_at": "2025-11-23T03:57:11.343787+00:00"
+}
