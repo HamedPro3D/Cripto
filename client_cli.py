@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import secrets
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import List
@@ -12,6 +13,7 @@ from merkle import get_merkle_root, verify_merkle_proof, MerkleProof
 
 
 API_BASE = "http://localhost:8000"
+TIMEOUT = 10
 
 
 def read_blocks(path: Path, block_size: int) -> List[bytes]:
@@ -58,18 +60,43 @@ def cmd_upload(args):
         print("Manifest saved to", args.manifest_out)
 
 
-def cmd_challenge(args):
-    nonce = args.nonce or "deadbeef"
-    payload = {
-        "file_id": args.file_id,
-        "nonce": nonce,
-        "k": args.k if args.indices is None else None,
-        "indices": args.indices,
-    }
+def send_challenge(server_url, file_id, k=None, indices=None, nonce=None):
+    if nonce is None:
+        nonce = secrets.token_hex(8)  # genera un nonce si falta
 
-    resp = requests.post(f"{API_BASE}/challenge", json=payload)
-    resp.raise_for_status()
-    print(json.dumps(resp.json(), indent=2))
+    payload = {"file_id": file_id, "nonce": nonce}
+    if indices is not None:
+        payload["indices"] = indices
+    else:
+        payload["k"] = k
+
+    try:
+        # usa la constante TIMEOUT para evitar bloqueo indefinido
+        resp = requests.post(f"{server_url}/challenge", json=payload, timeout=TIMEOUT)
+        resp.raise_for_status()
+    except requests.exceptions.Timeout:
+        print("Error: timeout al conectar con el servidor")
+        return None
+    except requests.exceptions.RequestException as e:
+        print("Error en la petición:", e)
+        return None
+
+    return resp.json()
+
+
+def cmd_challenge(args):
+    # use send_challenge so timeout and nonce handling are applied
+    resp_data = send_challenge(
+        API_BASE,
+        args.file_id,
+        k=(args.k if args.indices is None else None),
+        indices=args.indices,
+        nonce=args.nonce,
+    )
+    if resp_data is None:
+        print("No se recibió respuesta válida del servidor.")
+        return
+    print(json.dumps(resp_data, indent=2))
 
 
 def cmd_verify(args):

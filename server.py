@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 import base64
 import secrets
+import random
 from datetime import datetime, timedelta, timezone
 
 from merkle import get_merkle_root, build_merkle_proof, MerkleProof
@@ -13,9 +14,6 @@ from fastapi.openapi.utils import get_openapi
 
 app = FastAPI(
     title="Merkle PoR API Demo",
-    servers=[
-        {"url": "https://studious-space-pancake-gj7ggqv9wv42vp9q-8000.app.github.dev", "description": "Codespaces"}
-    ]
 )
 
 
@@ -116,35 +114,42 @@ def upload(req: UploadRequest):
 
 
 @app.post("/challenge", response_model=ChallengeResponse)
+@app.post("/challenge", response_model=ChallengeResponse)
 def challenge(req: ChallengeRequest):
     if req.file_id not in DB_BLOCKS:
         raise HTTPException(status_code=404, detail="file_id not found")
 
     num_blocks = len(DB_BLOCKS[req.file_id])
 
-    if req.indices is not None and req.k is not None:
-        raise HTTPException(
-            status_code=400,
-            detail="Provide either k or indices, not both"
-        )
-
+    # -----------------------------
+    # ✔️ VALIDACIÓN: k > num_blocks
+    # -----------------------------
     if req.indices is None:
-        # generamos índices pseudo-aleatorios
         k = req.k or 10
-        indices = set()
-        while len(indices) < k:
-            indices.add(secrets.randbelow(num_blocks))
-        indices = sorted(indices)
+        if k > num_blocks:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Requested k={k}, but file has only {num_blocks} blocks."
+            )
+
+        # -----------------------------
+        # Selección segura de índices
+        # -----------------------------
+        indices = sorted(random.sample(range(num_blocks), k))
+
     else:
-        # validamos índices
+        # Si el usuario envía índices manuales
         for i in req.indices:
             if i < 0 or i >= num_blocks:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Index out of range: {i}"
+                    detail=f"Index out of range: {i} (file has {num_blocks} blocks)"
                 )
         indices = sorted(set(req.indices))
 
+    # -----------------------------
+    # Generación del challenge
+    # -----------------------------
     challenge_id = "ch_" + secrets.token_hex(8)
     now = datetime.now(timezone.utc)
 

@@ -37,21 +37,34 @@ def build_merkle_tree(blocks: List[bytes]) -> List[List[bytes]]:
 
     # subir hasta la raíz
     while len(current_level) > 1:
+        print("LEVEL SIZE:", len(current_level))
         next_level = []
         # si hay número impar de nodos, duplicamos el último
         if len(current_level) % 2 == 1:
-            current_level.append(current_level[-1])
+            padded = current_level + [current_level[-1]]
+        else:
+            padded = current_level
 
-        for i in range(0, len(current_level), 2):
-            left = current_level[i]
-            right = current_level[i + 1]
+
+        next_level = []
+        for i in range(0, len(padded), 2):
+            left = padded[i]
+            right = padded[i + 1]
             next_level.append(node_hash(left, right))
 
         tree.append(next_level)
         current_level = next_level
-
+    dump_tree(tree)
+    
     return tree
 
+def dump_tree(tree):
+    print("\n=== MERKLE TREE ===")
+    for lvl, nodes in enumerate(tree):
+        print(f"Level {lvl} ({len(nodes)} nodes):")
+        for h in nodes:
+            print("   ", h.hex())
+    print("===================\n")
 
 def get_merkle_root(blocks: List[bytes]) -> bytes:
     return build_merkle_tree(blocks)[-1][0]
