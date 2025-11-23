@@ -122,7 +122,7 @@ def challenge(req: ChallengeRequest):
     num_blocks = len(DB_BLOCKS[req.file_id])
 
     # -----------------------------
-    # ✔️ VALIDACIÓN: k > num_blocks
+    # VALIDACIÓN: k > num_blocks
     # -----------------------------
     if req.indices is None:
         k = req.k or 10

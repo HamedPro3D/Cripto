@@ -85,7 +85,15 @@ def send_challenge(server_url, file_id, k=None, indices=None, nonce=None):
 
 
 def cmd_challenge(args):
-    # use send_challenge so timeout and nonce handling are applied
+    # leer manifest local
+    manifest = json.loads(Path("manifest.json").read_text())
+    num_blocks = manifest["num_blocks"]
+
+    if args.indices is None:
+        if args.k > num_blocks:
+            print(f"Error: k={args.k} es mayor que num_blocks={num_blocks}")
+            return
+        
     resp_data = send_challenge(
         API_BASE,
         args.file_id,
