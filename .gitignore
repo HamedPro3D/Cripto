@@ -1,0 +1,28 @@
+# --- Python cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual environments ---
+env/
+venv/
+ENV/
+
+# --- Archivos generados ---
+manifest.json
+*.bin
+*.txt
+
+# --- Logs ---
+*.log
+
+# --- Configuración de VSCode ---
+.vscode/
+
+# --- Archivos temporales ---
+*.tmp
+*.swp
+
+# --- FastAPI/uvicorn auto-generated ---
+*.db
