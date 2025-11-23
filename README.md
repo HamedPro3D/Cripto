@@ -22,6 +22,14 @@ uvicorn server:app --reload --host 127.0.0.1 --port 8000
 
 (Reemplaza host/port según necesites.)
 
+## Documentación de la API (FastAPI)
+Al arrancar el servidor, FastAPI expone la documentación interactiva en:
+- Swagger UI: http://127.0.0.1:8000/docs
+- ReDoc:     http://127.0.0.1:8000/redoc
+- OpenAPI JSON: http://127.0.0.1:8000/openapi.json
+
+Estas rutas permiten explorar los endpoints (`/upload`, `/challenge`, `/prove`), ver los esquemas de request/response y probar llamadas desde el navegador.
+
 ## Uso del cliente CLI
 Ejecutar desde la carpeta del proyecto.
 
@@ -68,5 +76,3 @@ python client_cli.py verify --manifest manifest.json --challenge-id <challenge_i
 - Persistencia real para bloques/manifest (actualmente memoria/estructura simple).
 - Logging más detallado en `server.py`.
 
-## Licencia
-Proyecto de ejemplo — adapta y usa según necesites.
